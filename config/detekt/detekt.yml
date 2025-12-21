@@ -1,0 +1,15 @@
+naming:
+  FunctionNaming:
+    active: true
+    ignoreAnnotated:
+      - Composable
+
+style:
+  MagicNumber:
+    active: true
+    ignoreNumbers: ["-1", "0", "1", "2"]
+    ignoreHashCodeFunction: true
+    ignorePropertyDeclaration: true
+    ignoreAnnotation: true
+    ignoreConstantDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
