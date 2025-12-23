@@ -21,4 +21,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "TripJournal"
 include(":app")
- 
+include(":trips")
+include(":trips:domain")
+include(":trips:data")
+include(":trips:ui")
