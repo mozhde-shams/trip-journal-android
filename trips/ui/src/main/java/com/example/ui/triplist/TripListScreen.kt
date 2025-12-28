@@ -1,5 +1,6 @@
-package com.example.ui
+package com.example.ui.triplist
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -13,30 +14,35 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.example.domain.Trip
+import com.example.domain.trips.Trip
+import com.example.ui.R
 
 @Composable
-fun TripsScreen(state: TripsState) {
+fun TripListScreen(
+    state: TripListState,
+    onTripClick: (String) -> Unit,
+) {
     Scaffold(
         topBar = {
-            TripsTopAppBar(
+            TripListTopAppBar(
                 title = stringResource(R.string.trips),
             )
         },
     ) { padding ->
         when (state) {
-            is TripsState.Loading -> {
-                Text("Loading")
+            is TripListState.Loading -> {
+                Text(stringResource(R.string.loading))
             }
 
-            is TripsState.Content -> {
-                TripsList(
+            is TripListState.Content -> {
+                TripList(
                     trips = state.trips,
                     padding = padding,
+                    onTripClick = onTripClick,
                 )
             }
 
-            is TripsState.Error -> {
+            is TripListState.Error -> {
                 Text("Error: ${state.message}")
             }
         }
@@ -45,7 +51,7 @@ fun TripsScreen(state: TripsState) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TripsTopAppBar(title: String) {
+private fun TripListTopAppBar(title: String) {
     TopAppBar(
         title = { Text(title) },
         colors = TopAppBarDefaults.topAppBarColors(
@@ -56,10 +62,11 @@ private fun TripsTopAppBar(title: String) {
 }
 
 @Composable
-private fun TripsList(
+private fun TripList(
     trips: List<Trip>,
     modifier: Modifier = Modifier,
     padding: PaddingValues,
+    onTripClick: (String) -> Unit,
 ) {
     LazyColumn(
         modifier = modifier
@@ -69,7 +76,12 @@ private fun TripsList(
         items(
             count = trips.size,
         ) { index ->
-            Text("${trips[index].title} ${trips[index].startDate} ${trips[index].endDate}")
+            Text(
+                text = "${trips[index].title} ${trips[index].startDate} ${trips[index].endDate}",
+                modifier = Modifier.clickable {
+                    onTripClick(trips[index].id)
+                },
+            )
         }
     }
 }

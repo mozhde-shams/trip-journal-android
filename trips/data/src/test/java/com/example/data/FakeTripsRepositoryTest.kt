@@ -1,10 +1,11 @@
 package com.example.data
 
-import com.example.domain.TripsRepository
+import com.example.domain.trips.TripsRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.test.assertFailsWith
 
 class FakeTripsRepositoryTest {
     private val repo: TripsRepository = FakeTripsRepository()
@@ -28,5 +29,19 @@ class FakeTripsRepositoryTest {
     fun `each trip has a valid date range`() = runTest {
         val trips = repo.getTrips()
         assertTrue(trips.all { it.startDate <= it.endDate })
+    }
+
+    @Test
+    fun `getTripById returns matching trip`() = runTest {
+        val result = repo.getTripById("1")
+        assertEquals("1", result.id)
+        assertEquals("Trip 1", result.title)
+    }
+
+    @Test
+    fun `getTripById throws when trip not found`() = runTest {
+        assertFailsWith<NoSuchElementException> {
+            repo.getTripById("999")
+        }
     }
 }

@@ -4,3 +4,5 @@ ktlint_standard_annotation = disabled
 ktlint_standard_final-newline = disabled
 ktlint_function_signature_body_expression_wrapping = default
 ktlint_standard_multiline-expression-wrapping = disabled
+ktlint_standard_trailing-comma-on-call-site = enabled
+ktlint_standard_trailing-comma-on-declaration-site = enabled

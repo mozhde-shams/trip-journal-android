@@ -13,6 +13,8 @@ fun AppHost() {
         navController = navController,
         startDestination = TRIPS_GRAPH_ROUTE,
     ) {
-        tripsGraph()
+        tripsGraph(
+            navController = navController,
+        )
     }
 }

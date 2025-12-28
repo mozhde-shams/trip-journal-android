@@ -1,6 +1,6 @@
 package com.example.data
 
-import com.example.domain.TripsRepository
+import com.example.domain.trips.TripsRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
