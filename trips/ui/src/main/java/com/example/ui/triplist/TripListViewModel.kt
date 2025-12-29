@@ -2,7 +2,7 @@ package com.example.ui.triplist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.domain.triplist.GetTripListUseCase
+import com.example.domain.triplist.ObserveTripListUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -10,24 +10,24 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TripListViewModel @Inject constructor(
-    private val getTripListUseCase: GetTripListUseCase,
+    private val observeTripListUseCase: ObserveTripListUseCase,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow<TripListState>(TripListState.Loading)
     val state: MutableStateFlow<TripListState>
         get() = mutableState
 
     init {
-        load()
+        observeTrips()
     }
 
-    private fun load() {
+    private fun observeTrips() {
         viewModelScope.launch {
             runCatching {
-                getTripListUseCase()
-            }.onSuccess { trips ->
-                state.value = TripListState.Content(trips)
+                observeTripListUseCase().collect { tripList ->
+                    mutableState.value = TripListState.Content(tripList)
+                }
             }.onFailure { exception ->
-                state.value = TripListState.Error(exception.message ?: "Unknown Error")
+                mutableState.value = TripListState.Error(exception.message ?: "Unknown Error")
             }
         }
     }

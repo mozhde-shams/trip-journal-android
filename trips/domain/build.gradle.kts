@@ -18,8 +18,8 @@ kotlin {
 
 dependencies {
     implementation(libs.hilt.core)
+    implementation(libs.coroutines.core)
 
     testImplementation(libs.coroutines.test)
     testImplementation(libs.junit)
-    testImplementation(libs.kotlin.test)
 }

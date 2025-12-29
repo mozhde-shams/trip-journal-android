@@ -1,28 +1,35 @@
 package com.example.data
 
+import com.example.data.database.PopulateInitialTrips
+import com.example.data.database.TripDao
+import com.example.data.database.TripEntity
+import com.example.data.database.toDomain
+import com.example.data.database.toEntity
 import com.example.domain.trips.Trip
 import com.example.domain.trips.TripsRepository
-import java.time.LocalDate
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-private const val FIRST_INDEX = 1
-private const val DEFAULT_TRIPS_COUNT = 10
-private const val DAYS_BETWEEN_TRIPS = 7
-private const val TRIP_DURATION_DAYS = 4
+class FakeTripsRepository @Inject constructor(
+    private val dao: TripDao,
+    private val populateInitialTrips: PopulateInitialTrips,
+) : TripsRepository {
+    override suspend fun observeTrips(): Flow<List<Trip>> = dao.observeTrips().map(::mapEntities)
 
-class FakeTripsRepository @Inject constructor() : TripsRepository {
-    private val trips = (FIRST_INDEX..DEFAULT_TRIPS_COUNT).map { index ->
-        val start = LocalDate.now().minusDays((index * DAYS_BETWEEN_TRIPS).toLong())
-        val end = start.plusDays(TRIP_DURATION_DAYS.toLong())
-        Trip(
-            id = index.toString(),
-            title = "Trip $index",
-            startDate = start,
-            endDate = end,
-        )
+    override suspend fun observeTripsById(tripId: String): Flow<Trip?> = dao
+        .observeTripById(tripId)
+        .map(::mapEntityOrNull)
+
+    override suspend fun populateInitialTripsIfEmpty() {
+        val existing = dao.observeTrips().first()
+        if (existing.isEmpty()) {
+            dao.upsertAll(populateInitialTrips.populateTrips().map { it.toEntity() })
+        }
     }
 
-    override suspend fun getTrips(): List<Trip> = trips
+    private fun mapEntities(entities: List<TripEntity>): List<Trip> = entities.map { it.toDomain() }
 
-    override suspend fun getTripById(tripId: String): Trip = trips.first { it.id == tripId }
+    private fun mapEntityOrNull(entity: TripEntity?): Trip? = entity?.toDomain()
 }

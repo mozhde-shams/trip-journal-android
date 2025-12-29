@@ -51,6 +51,7 @@ kotlin {
 dependencies {
     implementation(project(":trips:ui"))
     implementation(project(":trips:data"))
+    implementation(project(":trips:domain"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -64,6 +65,7 @@ dependencies {
     implementation(libs.coroutines.android)
     implementation(libs.navigation.compose)
     implementation(libs.hilt.android)
+    implementation(libs.startup.runtime)
 
     kapt(libs.hilt.compiler)
     kapt(libs.kotlin.metadata.jvm)

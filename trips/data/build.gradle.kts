@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.detekt)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.google.ksp)
     kotlin("kapt")
 }
 
@@ -48,13 +49,17 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material3)
     implementation(libs.hilt.android)
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
 
+    ksp(libs.room.compiler)
     kapt(libs.hilt.compiler)
     kapt(libs.kotlin.metadata.jvm)
 
     testImplementation(libs.junit)
     testImplementation(libs.coroutines.test)
-    testImplementation(libs.kotlin.test)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.room.testing)
+    androidTestImplementation(libs.coroutines.test)
 }

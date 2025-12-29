@@ -1,13 +1,17 @@
 package com.example.domain
 
-import com.example.domain.tripdetails.GetTripByIdUseCase
+import com.example.domain.tripdetails.ObserveTripByIdUseCase
 import com.example.domain.trips.Trip
 import com.example.domain.trips.TripsRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 import java.time.LocalDate
-import kotlin.test.assertFailsWith
 
 class GetTripByIdUseCaseTest {
     @Test
@@ -28,7 +32,7 @@ class GetTripByIdUseCaseTest {
         )
 
         val useCase = createUseCase(trips)
-        val actual = useCase("1")
+        val actual = useCase("1").first()
 
         assertEquals(trips[0], actual)
     }
@@ -50,19 +54,27 @@ class GetTripByIdUseCaseTest {
             ),
         )
         val useCase = createUseCase(trips)
-
-        assertFailsWith<NoSuchElementException> {
-            useCase("999")
-        }
+        val result = useCase("999").first()
+        assertNull(result)
     }
 }
 
 private class TripsRepositoryTest(
-    private val trips: List<Trip>,
+    private val initialTrips: List<Trip>,
 ) : TripsRepository {
-    override suspend fun getTrips(): List<Trip> = trips
+    private val trips = MutableStateFlow(initialTrips)
 
-    override suspend fun getTripById(tripId: String): Trip = trips.first { it.id == tripId }
+    override suspend fun observeTrips(): Flow<List<Trip>> = trips
+
+    override suspend fun observeTripsById(tripId: String): Flow<Trip?> = trips
+        .map { list -> findTripById(list, tripId) }
+
+    override suspend fun populateInitialTripsIfEmpty() = Unit
+
+    private fun findTripById(
+        list: List<Trip>,
+        tripId: String,
+    ): Trip? = list.firstOrNull { it.id == tripId }
 }
 
-private fun createUseCase(trips: List<Trip>) = GetTripByIdUseCase(TripsRepositoryTest(trips))
+private fun createUseCase(trips: List<Trip>) = ObserveTripByIdUseCase(TripsRepositoryTest(trips))

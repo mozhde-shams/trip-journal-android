@@ -2,10 +2,11 @@ package com.example.domain.triplist
 
 import com.example.domain.trips.Trip
 import com.example.domain.trips.TripsRepository
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class GetTripListUseCase @Inject constructor(
+class ObserveTripListUseCase @Inject constructor(
     private val tripsRepository: TripsRepository,
 ) {
-    suspend operator fun invoke(): List<Trip> = tripsRepository.getTrips()
+    suspend operator fun invoke(): Flow<List<Trip>> = tripsRepository.observeTrips()
 }

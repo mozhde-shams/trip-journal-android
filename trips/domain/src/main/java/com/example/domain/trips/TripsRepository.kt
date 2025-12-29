@@ -1,7 +1,11 @@
 package com.example.domain.trips
 
-interface TripsRepository {
-    suspend fun getTrips(): List<Trip>
+import kotlinx.coroutines.flow.Flow
 
-    suspend fun getTripById(tripId: String): Trip
+interface TripsRepository {
+    suspend fun observeTrips(): Flow<List<Trip>>
+
+    suspend fun observeTripsById(tripId: String): Flow<Trip?>
+
+    suspend fun populateInitialTripsIfEmpty()
 }
