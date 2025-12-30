@@ -6,6 +6,8 @@ import com.example.data.FakeTripsRepository
 import com.example.data.database.PopulateInitialTrips
 import com.example.data.database.TripDao
 import com.example.data.database.TripsDataBase
+import com.example.data.remote.FakeTripsRemoteDataSource
+import com.example.domain.trips.TripsRemoteDataSource
 import com.example.domain.trips.TripsRepository
 import dagger.Module
 import dagger.Provides
@@ -35,6 +37,14 @@ object TripsDataModule {
     @Singleton
     fun provideTripsRepository(
         dao: TripDao,
-        populateInitialTrips: PopulateInitialTrips,
-    ): TripsRepository = FakeTripsRepository(dao, populateInitialTrips)
+        remote: TripsRemoteDataSource,
+    ): TripsRepository = FakeTripsRepository(
+        dao = dao,
+        remote = remote,
+    )
+
+    @Provides
+    @Singleton
+    fun provideTripsRemoteDataSource(populateInitialTrips: PopulateInitialTrips): TripsRemoteDataSource =
+        FakeTripsRemoteDataSource(populateInitialTrips)
 }

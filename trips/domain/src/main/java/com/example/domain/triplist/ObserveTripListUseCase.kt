@@ -8,5 +8,5 @@ import javax.inject.Inject
 class ObserveTripListUseCase @Inject constructor(
     private val tripsRepository: TripsRepository,
 ) {
-    suspend operator fun invoke(): Flow<List<Trip>> = tripsRepository.observeTrips()
+    operator fun invoke(): Flow<List<Trip>> = tripsRepository.observeTrips()
 }

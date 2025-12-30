@@ -7,6 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.data.database.PopulateInitialTrips
 import com.example.data.database.TripDao
 import com.example.data.database.TripsDataBase
+import com.example.data.remote.FakeTripsRemoteDataSource
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -21,18 +22,28 @@ import org.junit.runner.RunWith
 class FakeTripsRepositoryTest {
     private lateinit var dao: TripDao
     private lateinit var db: TripsDataBase
+    private lateinit var remote: FakeTripsRemoteDataSource
     private lateinit var repo: FakeTripsRepository
 
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        db = Room.inMemoryDatabaseBuilder(context, TripsDataBase::class.java).allowMainThreadQueries().build()
+        db = Room
+            .inMemoryDatabaseBuilder(
+                context = context,
+                klass = TripsDataBase::class.java,
+            ).allowMainThreadQueries()
+            .build()
         dao = db.tripDao()
 
-        val populateInitialTrips = PopulateInitialTrips()
+        remote = FakeTripsRemoteDataSource(
+            populateInitialTrips = PopulateInitialTrips(),
+            delay = 0,
+            shouldFail = false,
+        )
         repo = FakeTripsRepository(
             dao = dao,
-            populateInitialTrips = populateInitialTrips,
+            remote = remote,
         )
     }
 
@@ -42,14 +53,34 @@ class FakeTripsRepositoryTest {
     }
 
     @Test
-    fun observeTrips_emitsPopulatedTrips_afterPopulateIfEmpty() = runTest {
-        repo.populateInitialTripsIfEmpty()
+    fun refreshTris_updatesDataBase() = runTest {
+        repo.refreshTrips()
         val trips = repo.observeTrips().first()
         assert(trips.isNotEmpty())
     }
 
     @Test
+    fun refreshTrips_failure_doesNotWipeCache() = runTest {
+        repo.refreshTrips()
+        val before = repo.observeTrips().first()
+        assertTrue(before.isNotEmpty())
+
+        val failingRemote = FakeTripsRemoteDataSource(
+            populateInitialTrips = PopulateInitialTrips(),
+            delay = 0,
+            shouldFail = true,
+        )
+        repo = FakeTripsRepository(dao = dao, remote = failingRemote)
+
+        runCatching { repo.refreshTrips() }
+
+        val after = repo.observeTrips().first()
+        assertEquals(before.map { it.id }.toSet(), after.map { it.id }.toSet())
+    }
+
+    @Test
     fun observeTripsById_emitUniqueId() = runTest {
+        repo.refreshTrips()
         val trips = repo.observeTrips().first()
         val ids = trips.map { list -> list.id }
         assertEquals(ids.size, ids.distinct().size)
@@ -57,13 +88,14 @@ class FakeTripsRepositoryTest {
 
     @Test
     fun observeTrips_eachTripHasValidDates() = runTest {
+        repo.refreshTrips()
         val trips = repo.observeTrips().first()
         assertTrue(trips.all { it.startDate <= it.endDate })
     }
 
     @Test
     fun getTripById_returnMatchingTrip() = runTest {
-        repo.populateInitialTripsIfEmpty()
+        repo.refreshTrips()
         val result = repo.observeTripsById("1").first()
         assertEquals("1", result?.id.toString())
         assertEquals("Trip 1", result?.title.toString())
@@ -71,7 +103,7 @@ class FakeTripsRepositoryTest {
 
     @Test
     fun getTripById_returnNullWhenTripIsNotFound() = runTest {
-        repo.populateInitialTripsIfEmpty()
+        repo.refreshTrips()
         val result = repo.observeTripsById("999").first()
         assertNull(result)
     }

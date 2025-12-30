@@ -60,16 +60,16 @@ class GetTripByIdUseCaseTest {
 }
 
 private class TripsRepositoryTest(
-    private val initialTrips: List<Trip>,
+    initialTrips: List<Trip>,
 ) : TripsRepository {
     private val trips = MutableStateFlow(initialTrips)
 
-    override suspend fun observeTrips(): Flow<List<Trip>> = trips
+    override fun observeTrips(): Flow<List<Trip>> = trips
 
-    override suspend fun observeTripsById(tripId: String): Flow<Trip?> = trips
+    override fun observeTripsById(tripId: String): Flow<Trip?> = trips
         .map { list -> findTripById(list, tripId) }
 
-    override suspend fun populateInitialTripsIfEmpty() = Unit
+    override suspend fun refreshTrips() = Unit
 
     private fun findTripById(
         list: List<Trip>,

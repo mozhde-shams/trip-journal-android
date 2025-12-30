@@ -6,5 +6,5 @@ import javax.inject.Inject
 class ObserveTripByIdUseCase @Inject constructor(
     private val repository: TripsRepository,
 ) {
-    suspend operator fun invoke(tripId: String) = repository.observeTripsById(tripId)
+    operator fun invoke(tripId: String) = repository.observeTripsById(tripId)
 }
