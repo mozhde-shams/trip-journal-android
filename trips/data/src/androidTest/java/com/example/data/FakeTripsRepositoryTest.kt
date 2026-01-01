@@ -4,9 +4,9 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.data.database.PopulateInitialTrips
-import com.example.data.database.TripDao
-import com.example.data.database.TripsDataBase
+import com.example.data.database.sync.SyncMetaDao
+import com.example.data.database.trip.TripDao
+import com.example.data.database.trip.TripsDataBase
 import com.example.data.remote.FakeTripsRemoteDataSource
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -20,7 +20,8 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class FakeTripsRepositoryTest {
-    private lateinit var dao: TripDao
+    private lateinit var tripDao: TripDao
+    private lateinit var syncMetaDao: SyncMetaDao
     private lateinit var db: TripsDataBase
     private lateinit var remote: FakeTripsRemoteDataSource
     private lateinit var repo: FakeTripsRepository
@@ -34,7 +35,8 @@ class FakeTripsRepositoryTest {
                 klass = TripsDataBase::class.java,
             ).allowMainThreadQueries()
             .build()
-        dao = db.tripDao()
+        tripDao = db.tripDao()
+        syncMetaDao = db.syncMetaDao()
 
         remote = FakeTripsRemoteDataSource(
             populateInitialTrips = PopulateInitialTrips(),
@@ -42,7 +44,8 @@ class FakeTripsRepositoryTest {
             shouldFail = false,
         )
         repo = FakeTripsRepository(
-            dao = dao,
+            dao = tripDao,
+            syncMetaDao = syncMetaDao,
             remote = remote,
         )
     }
@@ -70,7 +73,11 @@ class FakeTripsRepositoryTest {
             delay = 0,
             shouldFail = true,
         )
-        repo = FakeTripsRepository(dao = dao, remote = failingRemote)
+        repo = FakeTripsRepository(
+            dao = tripDao,
+            syncMetaDao = syncMetaDao,
+            remote = failingRemote,
+        )
 
         runCatching { repo.refreshTrips() }
 

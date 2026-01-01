@@ -1,4 +1,4 @@
-package com.example.data.database
+package com.example.data.database.trip
 
 import com.example.domain.trips.Trip
 import java.time.LocalDate

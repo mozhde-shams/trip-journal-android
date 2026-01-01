@@ -1,6 +1,6 @@
 package com.example.data.remote
 
-import com.example.data.database.PopulateInitialTrips
+import com.example.data.PopulateInitialTrips
 import com.example.domain.trips.Trip
 import com.example.domain.trips.TripsRemoteDataSource
 import kotlinx.coroutines.delay

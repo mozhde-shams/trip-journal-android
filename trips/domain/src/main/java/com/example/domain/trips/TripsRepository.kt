@@ -8,4 +8,8 @@ interface TripsRepository {
     fun observeTripsById(tripId: String): Flow<Trip?>
 
     suspend fun refreshTrips()
+
+    fun observeTripsLastUpdated(): Flow<Long?>
+
+    fun observeTripsLastError(): Flow<String?>
 }

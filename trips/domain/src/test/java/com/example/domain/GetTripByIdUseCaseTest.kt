@@ -2,11 +2,7 @@ package com.example.domain
 
 import com.example.domain.tripdetails.ObserveTripByIdUseCase
 import com.example.domain.trips.Trip
-import com.example.domain.trips.TripsRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -59,22 +55,8 @@ class GetTripByIdUseCaseTest {
     }
 }
 
-private class TripsRepositoryTest(
-    initialTrips: List<Trip>,
-) : TripsRepository {
-    private val trips = MutableStateFlow(initialTrips)
-
-    override fun observeTrips(): Flow<List<Trip>> = trips
-
-    override fun observeTripsById(tripId: String): Flow<Trip?> = trips
-        .map { list -> findTripById(list, tripId) }
-
-    override suspend fun refreshTrips() = Unit
-
-    private fun findTripById(
-        list: List<Trip>,
-        tripId: String,
-    ): Trip? = list.firstOrNull { it.id == tripId }
-}
-
-private fun createUseCase(trips: List<Trip>) = ObserveTripByIdUseCase(TripsRepositoryTest(trips))
+private fun createUseCase(trips: List<Trip>) = ObserveTripByIdUseCase(
+    repository = FakeTripsRepositoryTest(
+        trips = trips,
+    ),
+)

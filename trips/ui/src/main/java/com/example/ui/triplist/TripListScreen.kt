@@ -8,12 +8,17 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.example.domain.trips.Trip
 import com.example.ui.R
 
@@ -22,7 +27,17 @@ fun TripListScreen(
     state: TripListState,
     onTripClick: (String) -> Unit,
 ) {
+    val snackBarHostState = remember { SnackbarHostState() }
+    val lastError = (state as? TripListState.Content)?.lastError
+
+    LaunchedEffect(lastError) {
+        if (!lastError.isNullOrBlank()) {
+            snackBarHostState.showSnackbar(lastError)
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackBarHostState) },
         topBar = {
             TripListTopAppBar(
                 title = stringResource(R.string.trips),
@@ -35,8 +50,8 @@ fun TripListScreen(
             }
 
             is TripListState.Content -> {
-                TripList(
-                    trips = state.trips,
+                TripListContent(
+                    state = state,
                     padding = padding,
                     onTripClick = onTripClick,
                 )
@@ -62,8 +77,23 @@ private fun TripListTopAppBar(title: String) {
 }
 
 @Composable
+private fun TripListContent(
+    state: TripListState.Content,
+    padding: PaddingValues,
+    onTripClick: (String) -> Unit,
+) {
+    TripList(
+        trips = state.trips,
+        onTripClick = onTripClick,
+        padding = padding,
+        lastUpdatedText = state.lastUpdatedText,
+    )
+}
+
+@Composable
 private fun TripList(
     trips: List<Trip>,
+    lastUpdatedText: String,
     modifier: Modifier = Modifier,
     padding: PaddingValues,
     onTripClick: (String) -> Unit,
@@ -73,6 +103,15 @@ private fun TripList(
             .fillMaxSize()
             .padding(padding),
     ) {
+        item {
+            Text(
+                text = lastUpdatedText,
+                modifier = Modifier.padding(
+                    horizontal = 16.dp,
+                    vertical = 8.dp,
+                ),
+            )
+        }
         items(
             count = trips.size,
         ) { index ->
